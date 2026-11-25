@@ -1,192 +1,77 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/🌀_CookiePortal-v1.4.0-000000?style=for-the-badge&labelColor=1a1a2e" alt="CookiePortal">
-</p>
+<div align="center">
 
-<h1 align="center">CookiePortal</h1>
+# CookiePortal
 
-<p align="center">
-  <b>High-Performance Packet-Only Immersive Portal Engine for Paper & Folia 1.21 – 1.26.3</b>
-  <br>
-  <sub>Render real-time 3D views through Nether, End, and custom portals with zero client mods, zero NMS reflection, and zero memory leaks.</sub>
-</p>
+**Packet-only 3D see-through Nether and End portals for Paper and Folia.**
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Minecraft-1.21--1.26.3-16a34a?style=for-the-badge&logo=minecraft&logoColor=white" alt="Minecraft">
-  <img src="https://img.shields.io/badge/Java-21%20%2F%2025-f97316?style=for-the-badge&logo=openjdk&logoColor=white" alt="Java">
-  <img src="https://img.shields.io/badge/Paper-API-fbbf24?style=for-the-badge" alt="Paper">
-  <img src="https://img.shields.io/badge/Folia-Supported-3b82f6?style=for-the-badge" alt="Folia">
-  <img src="https://img.shields.io/badge/PacketEvents-2.11%E2%80%932.14-8b5cf6?style=for-the-badge" alt="PacketEvents">
-  <img src="https://img.shields.io/badge/Build-Maven-e11d48?style=for-the-badge&logo=apachemaven&logoColor=white" alt="Maven">
-</p>
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21--1.26.3-16a34a?style=flat-square)](https://papermc.io)
+[![Java](https://img.shields.io/badge/Java-21%20%7C%2025-ea580c?style=flat-square)](https://adoptium.net)
+[![PacketEvents](https://img.shields.io/badge/PacketEvents-2.11%E2%80%932.14-7c3aed?style=flat-square)](https://modrinth.com/plugin/packetevents)
+[![Version](https://img.shields.io/badge/Version-1.4.0-334155?style=flat-square)](https://github.com/KhoaSuperT1/CookiePortal)
 
-<p align="center">
-  <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
-  <img src="https://img.shields.io/badge/Status-Production--Ready-22c55e?style=flat-square" alt="Status">
-  <img src="https://img.shields.io/badge/Code_Quality-100%25_Clean-blue?style=flat-square" alt="Clean Code">
-</p>
+[Support Discord](https://discord.gg/NZycRMWrSS) · [MIT License](LICENSE)
+
+</div>
 
 ---
 
 > [!NOTE]
-> **⚠️ Disclaimer, AI Notice & Acknowledgements:**
-> This repository is a **refactored remake and bug-fixed fork** based on legacy decompiled software rasterization code.
-> Author **Cookie (LoveCookieee)** does **NOT** claim original ownership or creation of the underlying portal preview concept.
-> Roughly **80%** of the code and 1.21–1.26.3 modernization in this fork was written with AI assistance—please test on a staging server before deploying to production.
-> This project exists as an open-source, modernized fork focused on:
-> - **100% Clean Code**: Zero decompiler artifacts (`var\d+` / `var00`), pure human-readable Java 21 logic.
-> - **Memory Leak Fixes**: Resolved `remoteScenes` cache leaks, session leaks, and orphaned async chunk tasks.
-> - **PacketEvents 2.11+ Integration**: Replaced brittle Paper NMS reflection with robust API wrappers.
-> - **Paper & Folia Native Support**: Fully multithreaded and region-scheduler ready.
+> **Fork Disclaimer & AI Notice:**
+> CookiePortal is a refactored, leak-fixed fork derived from legacy software-rasterization code. Author **Cookie (LoveCookieee)** does not claim original ownership of the underlying portal preview concept.
+> Roughly **80%** of the code and `1.21 – 1.26.3` updates in this fork were written with AI assistance. Please test it on a staging server first—especially bandwidth limits (`update-interval-ticks` and `max-block-changes-per-update`) for larger player counts.
 
----
+## How It Works
 
-## 📋 Table of Contents
+When a player with `portal.see` walks near a Nether or End portal, CookiePortal computes their line-of-sight frustum through the portal opening, captures an async destination chunk snapshot, and streams client-only block changes and projected entities over PacketEvents. Players without permission continue to see standard vanilla portal blocks.
 
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Key Features](#-key-features)
-- [Requirements & Installation](#-requirements--installation)
-- [Configuration](#-configuration)
-- [Commands & Permissions](#-commands--permissions)
-- [Project Structure](#-project-structure)
-- [Building from Source](#-building-from-source)
-- [License](#-license)
-
----
-
-## 🔍 Overview
-
-**CookiePortal** delivers seamless, client-mod-free 3D portal previews directly over network packets. When players approach a Nether, End, or vertical stacked portal, CookiePortal calculates player line-of-sight raycasts and streams virtual block change packets to render the destination dimension in real time.
-
-```
-┌──────────────────────────────────────────────────────────┐
-│                   CookiePortal Engine                    │
-├──────────────────────────────────────────────────────────┤
-│                                                          │
-│  ┌──────────────── Player Raycast ────────────────┐      │
-│  │  Viewer Eye Position → Portal Opening Intersect│      │
-│  └────────────────────────────────────────────────┘      │
-│                            │                             │
-│                            ▼                             │
-│  ┌───────────── Destination Scene Snapshot ──────┐      │
-│  │  Async Chunk Capture → Biome & Block Mapping  │      │
-│  └────────────────────────────────────────────────┘      │
-│                            │                             │
-│                            ▼                             │
-│  ┌────────────── Software Rasterizer ─────────────┐      │
-│  │  Frustum Bounds Check → Masking & Void Shell   │      │
-│  └────────────────────────────────────────────────┘      │
-│                            │                             │
-│                            ▼                             │
-│  ┌───────────── PacketEvents 2.11+ Bridge ────────┐      │
-│  │  Client-Only BlockChange & MultiBlockChange    │      │
-│  │  Entity Projection & Local Occlusion Hiding    │      │
-│  └────────────────────────────────────────────────┘      │
-│                            │                             │
-│                            ▼                             │
-│  ┌──────────────── Minecraft Client ──────────────┐      │
-│  │  Immersive 3D Window View into Destination     │      │
-│  └────────────────────────────────────────────────┘      │
-│                                                          │
-└──────────────────────────────────────────────────────────┘
+```text
+Viewer Eye Raycast -> Portal Opening Frustum -> Async Destination Snapshot
+        -> Sealed Virtual Room Mask -> PacketEvents Block & Entity Stream
 ```
 
----
+### Changes in v1.4.0
 
-## ✨ Key Features
+- Updated and verified for **Minecraft 1.21 – 1.26.3** (Java 21 bytecode, compiled against both Paper `1.21.4` and `26.3`).
+- Replaced direct `GameRule.PLAYERS_NETHER_PORTAL_DEFAULT_DELAY` access with a registry/reflective resolver (`Registry.GAME_RULE` / `GameRules` + legacy fallback) for instant portal travel on Paper 26.x.
+- Added safe reflection/fallback bridging between `Player#sendMultiBlockChange` and `Player#sendBlockChanges` across Paper 1.21 and 26.3.
+- Updated PacketEvents entity projection support for **PacketEvents 2.14.0** (compatible with `2.11.0+`).
 
-<details>
-<summary><b>🔐 Permission-Gated Immersive Preview (<code>portal.see</code>)</b></summary>
+## Features
 
-- Only authorized players with the `portal.see` (or `cookieportal.see`) permission view the 3D immersive portal preview.
-- Non-permitted players see standard opaque purple Vanilla portal blocks (`Material.NETHER_PORTAL`) and experience normal Vanilla teleport delays.
-- Prevents unnecessary packet bandwidth usage on players who do not need portal previews.
+- **Per-Player Packet Streams:** Block and entity packets are sent per player channel, isolating viewers on opposite sides of a portal.
+- **Sealed Virtual Room Shell:** Renders a bounded `28 x 28 x 20` view framed with dimension-appropriate walls (`BLACKSTONE`/`NETHERRACK`, `END_STONE`, `STONE`/`DEEPSLATE`).
+- **Entity Projection:** Projects nearby destination mobs/players into the window while hiding local entities behind the frame.
+- **Biome Atmosphere:** Spawns destination-appropriate particles (Warped/Crimson spores, Soul fire/particles, Basalt ash, End rods, Overworld clouds).
+- **End Portal Parallax & Sky Arrival:** Static End diorama effect below End portals, plus an optional sky-arrival descent when entering the End.
+- **Optional Dimension Stacking:** Disabled by default; supports vertical dimension linking (`END -> OVERWORLD -> NETHER`) with optional bedrock openings.
+- **Folia Ready:** Built around region/entity schedulers and concurrent caches.
 
-</details>
-
-<details>
-<summary><b>🌈 Biome & Dimension-Aware Atmosphere Fog</b></summary>
-
-Dynamically spawns atmospheric particles at the depth boundary tailored to the destination biome:
-- **Nether Warped Forest**: Cyan/teal spores (`WARPED_SPORE`) + soul fire flames.
-- **Nether Crimson Forest**: Red spores (`CRIMSON_SPORE`) + flames.
-- **Nether Soul Sand Valley**: Soul particles (`SOUL`) + soul flames.
-- **Nether Basalt Deltas**: White ash + ash clouds.
-- **The End**: End rod particles (`END_ROD`) + Ender portal atmosphere.
-- **Overworld**: Sky clouds (`CLOUD`) + atmospheric white ash.
-
-</details>
-
-<details>
-<summary><b>🏰 Expanded & Sealed Virtual Room Shell Box</b></summary>
-
-- Renders a clean, structured virtual room shell (`28 x 28 x 20` blocks) around the destination view.
-- Outer boundaries are sealed with natural dimension-appropriate materials (`BLACKSTONE` / `NETHERRACK` in Nether, `END_STONE` in End, `STONE` / `DEEPSLATE` in Overworld), preventing background terrain leaks.
-
-</details>
-
-<details>
-<summary><b>👥 Multi-Player & Multi-Side Isolation</b></summary>
-
-- Block change packets are sent via network packets **exclusively to individual player channels**.
-- Players standing on opposite sides of a portal or in different dimensions view their own independent, thread-safe, client-side packet streams with zero conflict or interference.
-
-</details>
-
-<details>
-<summary><b>⚡ Folia & Paper Native Multithreading</b></summary>
-
-- Built from the ground up for Paper and Folia region schedulers.
-- Uses concurrent thread-safe data structures (`ConcurrentHashMap`) and async chunk snapshots.
-
-</details>
-
----
-
-## 📥 Requirements & Installation
-
-### Requirements
+## Requirements
 
 | Requirement | Version |
-|:---|:---|
-| Server Platform | Paper or Folia 1.21 – 1.26.3 |
-| Java Runtime | Java 21+ (Java 25 for 26.1–26.3) |
-| Required Dependency | [PacketEvents 2.11.0+ (2.14.0+ for 26.x)](https://github.com/retrooper/packetevents) |
+| :--- | :--- |
+| Server Platform | Paper, Purpur, Leaf, or Folia (`1.21 – 1.26.3`) |
+| Java Runtime | Java 21+ (Java 25 for `26.1 – 26.3`) |
+| Required Plugin | [PacketEvents](https://modrinth.com/plugin/packetevents) (`2.11.0+` for 1.21.x, `2.14.0+` for 26.x) |
 
-### Installation Steps
-
-1. Download `CookiePortal-1.4.0.jar` from Releases or build from source.
-2. Place `CookiePortal-1.4.0.jar` into your server's `plugins/` folder.
-3. Ensure `PacketEvents 2.11.0+` (`2.14.0+` on 26.x) is installed on your server.
-4. Start your server to generate `config.yml`.
-5. Grant permissions `portal.see` to allowed groups.
-
----
-
-## ⚙️ Configuration
+## Configuration
 
 <details>
-<summary><b>Full <code>config.yml</code> Reference</b> (click to expand)</summary>
+<summary>Default <code>config.yml</code></summary>
 
 ```yaml
-# CookiePortal 1.3 - Configuration
+nether: enable
+the_end: enable
 
 render:
   enabled: true
   activation-distance: 20
   update-interval-ticks: 2
-
-  # Dimensions of the virtual room rendered behind the portal
   room-width: 28
   room-height: 28
   room-depth: 20
-
-  # Max block change packets updated per cycle to maintain high FPS
   max-block-changes-per-update: 10000
-
-  # Precision of the player's gaze threshold for rendering
   look-dot-threshold: 0.35
-
   restore-vanilla-surface-distance: 20
   source-refresh-ticks: 40
 
@@ -212,7 +97,7 @@ end-portal:
     depth: 9
     particle-minimum-distance: 7
   sky-arrival:
-    enabled: true
+    enabled: false
     height-above-ground: 52
     hover-ticks: 40
     descent-speed: 0.42
@@ -235,107 +120,36 @@ dimension-stacking:
 
 </details>
 
----
-
-## 💬 Commands & Permissions
-
-### Commands
+## Commands & Permissions
 
 | Command | Description | Permission |
-|:---|:---|:---|
-| `/cookieportal reload` | Reloads plugin configuration | `cookieportal.admin` |
-| `/cookieportal info` | Displays portal registry status & active views | `cookieportal.admin` |
+| :--- | :--- | :--- |
+| `/cookieportal info` | Show registered portals, active views, and dimension-stack state | `cookieportal.admin` |
+| `/cookieportal reload` | Reload `config.yml` and restart portal renderers | `cookieportal.admin` |
 
-**Aliases**: `/cp`
-
-### Permissions
+Alias: `/cp`
 
 | Permission | Description | Default |
-|:---|:---|:---:|
-| `portal.see` | Allows players to see the 3D Immersive Portal preview | `op` |
-| `cookieportal.see` | Alias permission for viewing portal previews | `op` |
-| `cookieportal.admin` | Access to `/cookieportal` admin commands | `op` |
+| :--- | :--- | :---: |
+| `portal.see` / `cookieportal.see` | Allow viewing the 3D portal preview | `op` |
+| `cookieportal.admin` | Access `/cookieportal` commands | `op` |
 
----
+## Building from Source
 
-## 📁 Project Structure
-
-```
-CookiePortal/
-├── pom.xml                                 # Maven build manifest
-├── README.md
-├── LICENSE                                 # MIT License
-├── mvnw.cmd / .mvn/                        # Maven Wrapper
-└── src/
-    └── main/
-        ├── java/dev/khoa/plugin/cookieportal/
-        │   ├── CookiePortalPlugin.java            # Plugin main entrypoint
-        │   ├── command/
-        │   │   └── CookiePortalCommand.java       # Admin command handler
-        │   ├── config/
-        │   │   └── PortalConfig.java              # Configuration manager
-        │   ├── dimension/
-        │   │   ├── DimensionStackConfig.java      # Vertical stacking config
-        │   │   └── DimensionStackService.java     # Vertical travel service
-        │   ├── end/
-        │   │   ├── EndPortalConfig.java           # End portal config
-        │   │   └── EndPortalService.java          # End portal sky-arrival service
-        │   ├── platform/
-        │   │   ├── BukkitPortalScheduler.java     # Bukkit task scheduler
-        │   │   ├── FoliaPortalScheduler.java      # Folia region scheduler
-        │   │   ├── PlatformCompatibility.java     # Platform scheduler compatibility
-        │   │   └── PortalScheduler.java           # Scheduler abstraction interface
-        │   ├── portal/
-        │   │   ├── InstantPortalTravelService.java# Instant travel handler
-        │   │   ├── PortalListener.java            # Event listener
-        │   │   ├── PortalPlane.java               # Portal plane geometry model
-        │   │   ├── PortalRegistry.java            # Thread-safe portal registry
-        │   │   └── PortalSizeMatcher.java         # Destination frame matcher
-        │   └── render/
-        │       ├── PortalProjection.java          # Raycast mathematics
-        │       ├── PortalRenderService.java       # Software rasterizer & renderer
-        │       ├── ProjectedBlockProtectionListener.java # Block protection
-        │       ├── ViewSession.java               # Per-player view session state
-        │       └── entity/
-        │           ├── EntityPacketBridge.java    # PacketEvents bridge interface
-        │           ├── PacketEventsEntityPacketBridge.java # PacketEvents 2.11+ bridge
-        │           ├── PortalEntityRenderService.java   # Entity projection service
-        │           ├── ProjectedEntity.java        # Projected entity model
-        │           └── UnsupportedEntityPacketBridge.java # Fallback bridge
-        └── resources/
-            ├── config.yml
-            └── plugin.yml
-```
-
----
-
-## 🔨 Building from Source
+Requires **Java 21+** (Java 25 for the `verify-26.3` profile) and **Apache Maven 3.9+**.
 
 ```bash
-# Clone the repository
 git clone https://github.com/KhoaSuperT1/CookiePortal.git
 cd CookiePortal
-
-# Package using Maven
 mvn package
 ```
 
-Output artifact: `target/CookiePortal-1.4.0.jar`
+Compiled artifact: `target/CookiePortal-1.4.0.jar`
+
+## Support
+
+- **Discord:** https://discord.gg/NZycRMWrSS
 
 ---
 
-## 💬 Support & Community
-
-- **Discord**: https://discord.gg/NZycRMWrSS
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
-
----
-
-<p align="center">
-  <sub>Made with love and care by <b>Java-Cookieee</b> &amp; AI.</sub>
-</p>
+<div align="center"><sub>Made with love and care by <b>Java-Cookieee</b> &amp; AI.</sub></div>
