@@ -324,6 +324,12 @@ Output artifact: `target/CookiePortal-1.4.0.jar`
 
 ---
 
+## 💬 Support & Community
+
+- **Discord**: https://discord.gg/NZycRMWrSS
+
+---
+
 ## 📄 License
 
 This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
@@ -331,5 +337,5 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 ---
 
 <p align="center">
-  <sub>Built with ☕ and 🌀 by <b>Cookieee</b></sub>
+  <sub>Made with love and care by <b>Java-Cookieee</b> &amp; AI.</sub>
 </p>
