@@ -28,9 +28,10 @@
 ---
 
 > [!NOTE]
-> **⚠️ Disclaimer & Acknowledgements:**
+> **⚠️ Disclaimer, AI Notice & Acknowledgements:**
 > This repository is a **refactored remake and bug-fixed fork** based on legacy decompiled software rasterization code.
 > Author **Cookie (LoveCookieee)** does **NOT** claim original ownership or creation of the underlying portal preview concept.
+> Roughly **80%** of the code and 1.21–1.26.3 modernization in this fork was written with AI assistance—please test on a staging server before deploying to production.
 > This project exists as an open-source, modernized fork focused on:
 > - **100% Clean Code**: Zero decompiler artifacts (`var\d+` / `var00`), pure human-readable Java 21 logic.
 > - **Memory Leak Fixes**: Resolved `remoteScenes` cache leaks, session leaks, and orphaned async chunk tasks.
